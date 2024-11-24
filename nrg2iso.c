@@ -1,7 +1,7 @@
 /* 
    01/05/2003 Nrg2Iso v 0.1
 
-   Copyright (C) 2003 Grégory Kokanosky <gregory.kokanosky@free.fr>
+   Copyright (C) 2003 Grï¿½gory Kokanosky <gregory.kokanosky@free.fr>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -76,6 +76,35 @@ int checkIso(char *filename)
  return iso;
 }
 
+
+void analyze(FILE *fp)
+{
+  printf("analyzing...\n");
+  unsigned char chunkid[4];
+  int n;
+
+  fseek(fp, -12, SEEK_END);
+  n = fread(&chunkid, sizeof(chunkid[0]), 4, fp);
+  printf("(%d) chunk %c%c%c%c\n", n,
+         chunkid[0], chunkid[1], chunkid[2], chunkid[3]);
+
+  // long int offset = 307200;
+  // count = fread(&offset, sizeof(offset), 1, fp);
+  // printf("%d %lu-byte offset = %lu\n", count, sizeof(offset), offset);
+  
+  int offset = 0;
+  // fseek(fp, -4, SEEK_END);
+  n = fread(&offset, sizeof(offset) * 2, 1, fp);
+  // n = fread(&offset, sizeof(offset), 1, fp);
+  printf("(%d) %lu-byte offset = %u\n", n, sizeof(offset), offset);
+
+  fseek(fp, offset, SEEK_SET);
+  n = fread(chunkid, sizeof(chunkid[0]), 4, fp);
+  printf("(%d) chunk %c %c %c %c\n", n,
+         chunkid[0], chunkid[1], chunkid[2], chunkid[3]);
+}
+
+
 #define NUM_OF_COLUMNS 70
 
 int main(int argc, char **argv){
@@ -106,6 +135,9 @@ int main(int argc, char **argv){
       
       nrgSize = buf.st_size;
       nrgFile=fopen(argv[1],"rb");
+
+      analyze(nrgFile);
+
       fseek (nrgFile, 307200, SEEK_SET);
       
       isoFile=fopen(argv[2],"wb+");
